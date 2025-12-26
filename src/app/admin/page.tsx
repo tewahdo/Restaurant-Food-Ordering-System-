@@ -14,8 +14,8 @@ export default function AdminFoods() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
-  const [editingFood, setEditingFood] = useState<Food | null>(null); // <-- New
 
+  // Fetch foods
   const fetchFoods = async () => {
     const res = await fetch("/api/foods");
     const data = await res.json();
@@ -26,6 +26,7 @@ export default function AdminFoods() {
     fetchFoods();
   }, []);
 
+  // Add food
   const handleAdd = async () => {
     const res = await fetch("/api/foods", {
       method: "POST",
@@ -38,38 +39,17 @@ export default function AdminFoods() {
     } else alert("Failed to add food");
   };
 
+  // Delete food
   const handleDelete = async (id: number) => {
     const res = await fetch(`/api/foods/${id}`, { method: "DELETE" });
     if (res.ok) fetchFoods();
     else alert("Failed to delete food");
   };
 
-  const handleEdit = (food: Food) => {
-    setEditingFood(food); // open modal with food data
-  };
-
-  const handleUpdate = async () => {
-    if (!editingFood) return;
-    const res = await fetch(`/api/foods/${editingFood.id}`, {
-      method: "PUT",
-      body: JSON.stringify({
-        name: editingFood.name,
-        description: editingFood.description,
-        price: editingFood.price,
-      }),
-      headers: { "Content-Type": "application/json" },
-    });
-    if (res.ok) {
-      setEditingFood(null);
-      fetchFoods();
-    } else alert("Failed to update food");
-  };
-
   return (
     <div className="p-8">
       <h1 className="text-2xl font-bold mb-4">Manage Foods</h1>
 
-      {/* Add Food */}
       <div className="mb-6 flex gap-2">
         <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Name" className="border p-2 rounded"/>
         <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Description" className="border p-2 rounded"/>
@@ -77,7 +57,6 @@ export default function AdminFoods() {
         <button onClick={handleAdd} className="bg-green-500 text-white p-2 rounded">Add</button>
       </div>
 
-      {/* Foods Table */}
       <table className="w-full border">
         <thead>
           <tr className="bg-gray-200">
@@ -93,46 +72,13 @@ export default function AdminFoods() {
               <td className="border p-2">{food.name}</td>
               <td className="border p-2">{food.description}</td>
               <td className="border p-2">{food.price}</td>
-              <td className="border p-2 flex gap-2">
-                <button onClick={() => handleEdit(food)} className="bg-yellow-500 text-white p-1 rounded">Edit</button>
+              <td className="border p-2">
                 <button onClick={() => handleDelete(food.id)} className="bg-red-500 text-white p-1 rounded">Delete</button>
               </td>
             </tr>
           ))}
         </tbody>
       </table>
-
-      {/* Edit Modal */}
-      {editingFood && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="bg-white p-6 rounded w-96">
-            <h2 className="text-xl font-bold mb-4">Edit Food</h2>
-            <input
-              value={editingFood.name}
-              onChange={(e) => setEditingFood({ ...editingFood, name: e.target.value })}
-              placeholder="Name"
-              className="w-full border p-2 mb-2 rounded"
-            />
-            <input
-              value={editingFood.description}
-              onChange={(e) => setEditingFood({ ...editingFood, description: e.target.value })}
-              placeholder="Description"
-              className="w-full border p-2 mb-2 rounded"
-            />
-            <input
-              value={editingFood.price}
-              onChange={(e) => setEditingFood({ ...editingFood, price: parseFloat(e.target.value) })}
-              placeholder="Price"
-              className="w-full border p-2 mb-4 rounded"
-              type="number"
-            />
-            <div className="flex justify-end gap-2">
-              <button onClick={() => setEditingFood(null)} className="p-2 bg-gray-300 rounded">Cancel</button>
-              <button onClick={handleUpdate} className="p-2 bg-blue-500 text-white rounded">Update</button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
